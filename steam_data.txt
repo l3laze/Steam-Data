@@ -1,0 +1,299 @@
+# A tree-based representation of the Steam client's settings in it's internal files.
+#
+# The ../Steam/registry.vdf file only exists on Mac and Linux versions of Steam; it is a
+#   VDF-based replacement of the registry data of Steam on Windows. To access that data
+#   on Windows RegEdit or another registry editing application must be used.
+#
+# Note: The setting "Run Steam when my computer starts" is not stored in the Steam client files on all systems.
+# On Mac: It's stored in the Login Items, which can be edited by going to System Preferences->Users & Groups->Login Items.
+# On Windows: It's part of the [Startup Programs](https://www.howtogeek.com/74523/how-to-disable-startup-programs-in-windows/).
+# On Linux: It will probably be different for different flavors; you are beyond my abilities there.
+
+Steam/
+  config/
+    config.vdf
+      InstallConfigStore
+        Software
+          Valve
+            Steam
+              AutoUpdateWindowEnabled = 0 | 1                           (Downloads -> Only auto update games between)
+              NoSavePersonalInfo = 0 | 1                                (Account -> Don't save account credentials on this computer)
+              MaxServerBrowserPingsPerMin = #                           (In-Game -> In-game server browser: Max pings / minute)
+                0 = Automatic (5000)
+                5000
+                3000
+                1500
+                1000
+                500
+                250
+              DownloadThrottleKbps = #                                  (Downloads -> Limit bandwidth to)
+                     0 = None
+                   128 =   16 KB/s
+                   256 =   32 KB/s
+                   384 =   48 KB/s
+                   512 =   64 KB/s
+                   768 =   96 KB/s
+                  1024 =  128 KB/s
+                  1536 =  192 KB/s
+                  2048 =  256 KB/s
+                  3072 =  384 KB/s
+                  4096 =  512 KB/s
+                  6144 =  768 KB/s
+                  8000 = 1000 KB/s (1 MB/s)
+                 12000 =  1.5 MB/s
+                 16000 =    2 MB/s
+                 24000 =    3 MB/s
+                 40000 =    5 MB/s
+                 56000 =    7 MB/s
+                 80000 =   10 MB/s
+                200000 =   25 MB/s
+              AllowDownloadsDuringGameplay = 0 | 1                      (Downloads -> Allow downloads during gameplay)
+              StreamingThrottleEnabled = 0 | 1                          (Downloads -> Throttle downloads while streaming)
+              ClientBrowserAuth = 0 | 1                                 (Web Browser -> Allow desktop Web browsers to automatically log into Steam sites)
+              AutoUpdateWindowStart #                                   (Downloads -> Only auto-update games between [start])
+                0 = 12AM
+                ..
+                23 = 11PM
+              AutoUpdateWindowEnd #                                     (Downloads -> Only auto-update games between [end])
+                0 = 12AM
+                ..
+                23 = 11PM
+        Music
+          CrawlSteamInstallFolders = 0 | 1                              (Music -> Scan Steam folders for soundtracks)
+          PauseOnVoiceChat = 0 | 1                                      (Music -> Pause music -> When voice chatting)
+          PlaylistNowPlayingNotification = 0 | 1                        (Music -> Display a notification -> When a new track begins)
+          CrawlAtStartup = 0 | 1                                        (Music -> Scan at startup)
+          PauseOnAppStartedProcess = 0 | 1                              (Music -> Pause music -> When starting an application)
+          LogCrawling = 0 | 1                                           (Music -> Save scanning activity log)
+    loginusers.vdf
+      users
+        SteamID64
+          AccountName                                                   (The account name used to login to Steam)
+          PersonaName                                                   (The account display name)
+          RememberPassword = 0 | 1                                      (Remember password for the login dialog)
+          mostrecent = 0 | 1                                            (Unknown, seems to be related to RememberPassword's most recent value)
+          WantsOfflineMode = 0 | 1                                      (Start in offline mode)
+          SkipOfflineWarning = 0 | 1                                    (Skips warning about starting in offline mode)
+  registry.vdf
+    Registry
+      HKLM
+        Software
+          Valve
+            Steam
+              SteamPID = #                                              (Steam's [Process ID](http://www.linfo.org/pid.html); Will be 0 if Steam is not running, otherwise non-zero.)
+              TempAppCmdLine                                            (Unknown; seems to be useless.......would be nice to have!)
+      HKCU
+        Software
+          Valve
+            Steam
+              AutoLoginUser = string                                    (The user to automatically login to Steam, by the account name)
+              language = string
+                bulgarian
+                czech
+                danish
+                dutch
+                english
+                finnish
+                french
+                german
+                greek
+                hungarian
+                italian
+                japanese
+                koreana
+                norwegian
+                polish
+                portuguese
+                brazilian = Portuguese-Brazil
+                russian
+                romanian
+                schinese = Simplified Chinese
+                spanish
+                swedish
+                tchinese = Traditional Chinese
+                thai
+                turkish
+                ukrainian
+              RememberPassword = 0 | 1                                  (Remember password for the login dialog)
+              SkinV4 = string                                           (Name of the currently selected skin; uses the name of it's folder)
+  steamapps/
+    appmanifest_#.acf
+      AppState
+        appid = #                                                       (The app/game's Steam appid)
+        Universe = #                                                    (More info can be found here: https://developer.valvesoftware.com/wiki/SteamID#Universes_Available_for_Steam_Accounts)
+        name = string                                                   (The app/game's name)
+        StateFlags = #                                                  (More info can be found here: https://github.com/lutris/lutris/blob/master/docs/steam.rst)
+        installdir = string                                             (The directory name where this game's data is installed, inside ../steamapps/common/)
+        LastUpdated = timestamp                                         (Timestamp of when app was last updated)
+        SizeOnDisk = #                                                  (Size on disk, in bytes)
+        buildid = #                                                     (Check out SteamDB: https://steamdb.info/faq/#build-id)
+        LastOwner = Steam3ID                                            (More info can be found here: https://steamcommunity.com/sharedfiles/filedetails/?id=209000244)
+        BytesToDownload = #                                             (The amount of bytes left to download to install or update the app/game)
+        BytesDownloaded = #                                             (The amount of bytes downloaded so far towards installing or updating the app/game)
+        AutoUpdateBehavior = #                                          (Game's Properties page -> Automatic updates)
+          0 = Always keep this game up to date.
+          1 = Only update this game when I launch it.
+          2 = High priority - Always auto-update this game before others.
+        AllowOtherDownloadsWhileRunning = #                             (Game's Properties page -> Background downloads)
+          0 = Follow my global setting ([your global setting])
+          1 = Always allow background downloads
+          2 = Never allow background downloads
+        UserConfig
+          language = string                                             (Game's Properties page -> Language)
+            Possible values depend on which languages are available for the game.
+            Some possibilities are the same as the language values in registry.vdf/Registry/HKCU/Software/Valve/Steam/language
+              but there may be others.
+    libraryfolders.vdf
+      # = /path/to/folder                                               (A non-default Steam Library Folder; # will be 1+)
+    common/                                                             (Data for installed apps/games)
+  userdata/
+    Steam64ID/
+      7/
+        remote/
+          sharedconfig.vdf
+
+            UserRoamingConfigStore
+              Software
+                Valve
+                  Steam
+                    Apps
+                      appid
+                        cloudenabled = 0 | 1                            (Game's Properties page -> Steam Cloud -> Enable Steam Cloud synchronization for [app name])
+                        Hidden = 0 | 1
+                        tags
+                          # = "tag"                                     (Where "tag" is either a user tag or the default tag "favorite")
+                    SteamDefaultDialog                                  (Interface -> Favorite window)
+                      #app_store = Store
+                      #app_games = Library
+                      #app_news = News
+                      #app_friends = Friends
+                      #steam_menu_friend_activity = Friend Activity
+                      #steam_menu_community_home = Community
+                      #app_servers = Servers
+      config/
+        localconfig.vdf
+          UserLocalConfigStore
+            friends
+              PersonaStateDesired = #                                   (Friends -> status)
+                0 = offline
+                5 = Looking to Trade
+                6 = Looking to Play
+                2 = Busy
+                3 = Away
+                1 = Online
+                What is 4?
+              VoiceReceiveVolume = 0 to 255                             (Voice -> Receive Volume)
+              Notifications_ShowIngame = 0 | 1                          (Friends -> When any Friend joins a game -> Display a notification)
+              Sounds_PlayIngame = 0 | 1                                 (Friends -> When any Friend joins a game -> Play a sound)
+              Notifications_ShowOnline 0 | 1                            (Friends -> When any Friend comes online -> Display a notification)
+              Sounds_PlayOnline = 0 | 1                                 (Friends -> When any Friend comes online -> Play a sound)
+              Notifications_ShowMessage = 0 | 1                         (Friends -> When I receive a message -> Display a a notification)
+              Sounds_PlayMessage = 0 | 1                                (Friends -> When I receive a message -> Display a a notification)
+              AutoSignIntoFriends = 0 | 1                               (Friends -> Automatically sign into Friends when I start Steam)
+              ShowTimeInChatLogCheck = 0 | 1                            (Friends -> Display timestamps in chat log)
+              AlwaysNewChatWindow = 0 | 1                               (Friends -> Always open a new chat window rather than a tab)
+              Notifications_EventsAndAnnouncements = 0 | 1	            (Friends -> For group events and announcements -> Display a notification)
+              Sounds_EventsAndAnnouncements = 0 | 1                     (Friends -> For group events and announcements -> Display a notification)
+              ChatFlashMode = 0 | 1                                     (Friends -> Flash window when I receive a message)
+              ShowFriendsPanelInOverlay = 0 | 1                         (If the Friends dialog was open when you last had the Overlay open)
+            streaming_v2
+              EnableStreaming = 0 | 1                                   (In-Home Streaming -> Enable Streaming)
+              QualityPreference = #                                     (In-Home Streaming -> Client options)
+                1 = Fast
+                2 = Balanced
+                3 = Beautiful
+              ChangeDesktopResolution = 0 | 1                           (In-Home Streaming -> Advanced Host Options -> Change desktop resolution to match streaming client)
+              DynamicallyAdjustResolution = 0 | 1                       (In-Home Streaming -> Advanced Host Options -> Dynamically adjust capture resolution to improve performance)
+              EnableCaptureNVFBC = 0 | 1                                (In-Home Streaming -> Advanced Host Options -> Use NVFBC to capture on NVIDIA GPU)
+              EnableHardwareEncoding_NVIDIA = 0 | 1                     (In-Home Streaming -> Advanced Host Options -> Enable hardware encoding on NVIDIA GPU)
+              EnableHardwareEncoding_AMDV2 = 0 | 1                      (In-Home Streaming -> Advanced Host Options -> Enable hardware encoding on AMD GPU)
+              EnableHardwareEncoding_Intel = 0 | 1                      (In-Home Streaming -> Advanced Host Options -> Enable hardware encoding on Intel GPU)
+              EnableTrafficPriority = 0 | 1                             (In-Home Streaming -> Advanced Host Options -> Prioritize Network traffic)
+              SoftwareEncodingThreadCount = #                           (In-Home Streaming -> Advanced Host Options -> Number of software encoding threads)
+                0 = Automatic
+                1 = 1
+                2 = 2
+                3 = 3
+                4 = 4
+                5 = 5
+                6 = 6
+                7 = 7
+                8 = 8
+              EnableHardwareDecodingV2 = 0 | 1                          (In-Home Streaming -> Advanced Client Options -> Enable hardware decoding)
+              EnableDebugOverlay = 0 | 1                                (In-Home Streaming -> Advanced Client Options -> Display performance information)
+              BandwidthLimitKBit = #                                    (In-Home Streaming -> Advanced Client Options -> Limit bandwidth to)
+                   -1 = Automatic (recommended)
+                 3000 = 3MBit/s
+                 5000 = 5MBit/s
+                10000 = 10MBit/s
+                50000 = 50MBit/s
+                    0 = Unlimited (increases latency)
+              ResolutionLimit = string                                  (In-Home Streaming -> Advanced Client Options -> Limit resolution to)
+                      0x0 = Display resolution
+                1920x1080 = 1920x1080 (1080p)
+                 1600x900 =  1600x900 (900p)
+                 1280x720 =  1280x720 (720p)
+                  852x480 =   852x480 (480p)
+              AudioChannels = #                                         (In-Home Streaming -> Advanced Client Options -> Speaker configuration)
+                2 = Stereo
+                4 = Quadraphonic (2 front, 2 rear)
+                6 = 5.1 Surround
+              LastInstallFolderIndex = #                                (The last Steam Library folder you installed a game to)
+                0 = default ../Steam/steamapps/ folder
+                # = Index of folder from libraryfolders.vdf (1 or more).
+            StartupState.Friends = 0 | 1                                (Whether the Friends dialog was open when you last had Steam open)
+            News
+              NotifyAvailableGames = 0 | 1                              (Interface -> Notify me about additions or changes to my games, new releases, and upcoming releases)
+            system
+              EnableGameOverlay = 0 | 1                                 (In-Game -> Enable the Steam overlay while in-game)
+              InGameOverlayShortcutKey = ValveKeyCombo                  (In-Game -> Overlay shortcut keys)
+                Modifiers
+                    Shift
+                    Ctrl
+                    Alt
+                    Win (including Mac's Cmd key)
+                Key codes
+                    KEY_F1-KEY_12
+                    KEY_ESCAPE
+                    KEY_TAB
+                    KEY_MINUS
+                    KEY_0-KEY_9
+                    KEY_A-KEY_Z
+                    KEY_LBRACKET
+                    KEY_RBRACKET
+                    KEY_BACKSLASH
+                    KEY_SPACE
+                    KEY_BACKQUOTE
+                    KEY_UP
+                    KEY_ENTER
+                    KEY_NONE (+/= key)
+                    KEY_BACKSPACE
+                    KEY_COMMA
+                    KEY_PERIOD
+                    KEY_SLASH
+                    KEY_SEMICOLON
+              InGameOverlayScreenshotNotification = 0 | 1               (In-Game -> When a screenshot is taken -> Display a notification)
+              InGameOverlayScreenshotPlaySound = 0 | 1                  (In-Game -> When a screenshot is taken -> Play a sound)
+              InGameOverlayScreenshotSaveUncompressed = 0 | 1           (In-Game -> When a screenshot is taken -> Save an uncompressed copy)
+              InGameOverlayShowFPSContrast = 0 | 1                      (In-Game -> In-game FPS counter -> High contrast)
+              InGameOverlayShowFPSCorner = #                            (In-Game -> In-game FPS counter)
+                0 = Off
+                1 = Top-left
+                2 = Top-right
+                3 = Bottom-right
+                4 = Bottom-left
+              InGameOverlayScreenshotHotKey KEY_F12                     (In-Game -> Screenshot shortcut keys)
+              NavUrlBar = 0 | 1                                         (Interface -> Display Steam URL address bar when available)
+              displayratesasbits = 0 | 1                                (Downloads -> Display download rates in bits per second)
+              UsePushToTalk = 0 | 1                                     (Voice -> Automatically transmit my voice when I speak)
+                0 = Use a push-to-talk key to transmit voice
+                1 = Automatically transmit my voice when I speak
+              PushToTalkKey = system-specific-numeric-keycode           (Voice -> Use a push-to-talk key to transmit voice)
+                Mac seems to use the key codes [from this page](http://macbiblioblog.blogspot.com/2014/12/key-codes-for-function-and-special-keys.html)
+                Windows 7 seems to use the classic ASCII key codes
+                Ubuntu Linux 16 seems to use the key codes [from this page](http://www.tcl.tk/man/tcl8.4/TkCmd/keysyms.htm)
+              GameOverlayHomePage = string                              (Web Browser -> Web browser home page)
+              JumplistSettings = #                                      (Interface -> Taskbar preferences)
+                Unknown # format
+              JumplistSettingsKnown = #                                 (Interface -> Taskbar preferences)
+                Unknown # format
