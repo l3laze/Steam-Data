@@ -176,12 +176,12 @@ Steam/
             friends
               PersonaStateDesired = #                                   (Friends -> status)
                 0 = offline
-                5 = Looking to Trade
                 6 = Looking to Play
+                5 = Looking to Trade
+                4 = Snooze
                 2 = Busy
                 3 = Away
                 1 = Online
-                What is 4?
               VoiceReceiveVolume = 0 to 255                             (Voice -> Receive Volume)
               Notifications_ShowIngame = 0 | 1                          (Friends -> When any Friend joins a game -> Display a notification)
               Sounds_PlayIngame = 0 | 1                                 (Friends -> When any Friend joins a game -> Play a sound)
@@ -297,3 +297,18 @@ Steam/
                 Unknown # format
               JumplistSettingsKnown = #                                 (Interface -> Taskbar preferences)
                 Unknown # format
+        shortcuts.vdf
+          #
+            AppName = "the name of the program in Steam"
+            exe = "the path to the executable file"
+            StartDir = "program start directory"
+            icon = "override program icon"
+            ShortcutPath = "path to shortcut"
+            LaunchOptions = "exe launch options"
+            IsHidden = 0 | 1
+            AllowDesktopConfig = 0 | 1
+            AllowOverlay = 0 | 1
+            OpenVR = 0 | 1
+            LastPlayTime = unix time in seconds
+            tags
+              # = "tags"
