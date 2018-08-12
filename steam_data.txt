@@ -5,11 +5,12 @@
 #   on Windows RegEdit or another registry editing application must be used.
 #
 # Note: The setting "Run Steam when my computer starts" is not stored in the Steam client files on all systems.
-# On Mac: It's stored in the Login Items, which can be edited by going to System Preferences->Users & Groups->Login Items.
+# On Mac: It's stored in the Login Items, which can be edited by going to System Preferences -> Users & Groups -> Login Items.
 # On Windows: It's part of the [Startup Programs](https://www.howtogeek.com/74523/how-to-disable-startup-programs-in-windows/).
-# On Linux: It will probably be different for different flavors; you are beyond my abilities there.
+# On Linux: If you're good enough to game here you're far smarter than I, and I believe you can find this.
 
 Steam/
+  .crash                                                                (Created if the client crashes on startup. Will be deleted once it closes properly)
   config/
     config.vdf
       InstallConfigStore
@@ -17,6 +18,12 @@ Steam/
           Valve
             Steam
               AutoUpdateWindowEnabled = 0 | 1                           (Downloads -> Only auto update games between)
+              ShaderCacheManager                                        (Shader Cache specific settings)
+                HasCurrentBucket = 0 | 1                                (Unknown)
+                CurrentBucketGPU                                        (Unknown)
+                CurrentBucketDriver                                     (Unknown)
+                DisableShaderCache = 0 | 1                              (Shader Cache -> Disable the shader cache; not compatible with Mac)
+              SurveyDate                                                (When the Steam hardware survey was last taken)
               NoSavePersonalInfo = 0 | 1                                (Account -> Don't save account credentials on this computer)
               MaxServerBrowserPingsPerMin = #                           (In-Game -> In-game server browser: Max pings / minute)
                 0 = Automatic (5000)
@@ -59,6 +66,7 @@ Steam/
                 ..
                 23 = 11PM
         Music
+          MusicVolume = 0..1                                            (Music -> Volume slider)
           CrawlSteamInstallFolders = 0 | 1                              (Music -> Scan Steam folders for soundtracks)
           PauseOnVoiceChat = 0 | 1                                      (Music -> Pause music -> When voice chatting)
           PlaylistNowPlayingNotification = 0 | 1                        (Music -> Display a notification -> When a new track begins)
@@ -68,7 +76,6 @@ Steam/
     loginusers.vdf
       users
         SteamID64
-          AccountName                                                   (The account name used to login to Steam)
           PersonaName                                                   (The account display name)
           RememberPassword = 0 | 1                                      (Remember password for the login dialog)
           mostrecent = 0 | 1                                            (Unknown, seems to be related to RememberPassword's most recent value)
@@ -86,7 +93,7 @@ Steam/
         Software
           Valve
             Steam
-              AutoLoginUser = string                                    (The user to automatically login to Steam, by the account name)
+              RunningAppID = #                                          (Currently running app id)
               language = string
                 bulgarian
                 czech
@@ -114,7 +121,12 @@ Steam/
                 thai
                 turkish
                 ukrainian
+              AutoLoginUser = string                                    (The user to automatically login to Steam, by the account name)
               RememberPassword = 0 | 1                                  (Remember password for the login dialog)
+              StartupMode = #                                           (Start in regular or BP mode)
+                0 = default
+                1 = Big Picture
+              AlreadyRetriedOfflineMode = 0 | 1                         (Unknown)
               SkinV4 = string                                           (Name of the currently selected skin; uses the name of it's folder)
   steamapps/
     appmanifest_#.acf
@@ -124,7 +136,7 @@ Steam/
         name = string                                                   (The app/game's name)
         StateFlags = #                                                  (More info can be found here: https://github.com/lutris/lutris/blob/master/docs/steam.rst)
         installdir = string                                             (The directory name where this game's data is installed, inside ../steamapps/common/)
-        LastUpdated = timestamp                                         (Timestamp of when app was last updated)
+        LastUpdated = timestamp                                         (Timestamp of when app was last updated locally)
         SizeOnDisk = #                                                  (Size on disk, in bytes)
         buildid = #                                                     (Check out SteamDB: https://steamdb.info/faq/#build-id)
         LastOwner = Steam3ID                                            (More info can be found here: https://steamcommunity.com/sharedfiles/filedetails/?id=209000244)
@@ -138,20 +150,28 @@ Steam/
           0 = Follow my global setting ([your global setting])
           1 = Always allow background downloads
           2 = Never allow background downloads
+        ScheduledAutoUpdate = 0 | 1                                     (Unknown; related to the problem with Steam scheduling updates for the future?)
         UserConfig
           language = string                                             (Game's Properties page -> Language)
             Possible values depend on which languages are available for the game.
             Some possibilities are the same as the language values in registry.vdf/Registry/HKCU/Software/Valve/Steam/language
               but there may be others.
+        InstalledDepots                                                 (More info can be found on https://steamdb.info)
+          # = depotID
+            "manifest" = #
+        MountedDepots                                                   (More info can be found on https://steamdb.info)
+          depotID = manifestID
+        InstallScripts
+          appid = location                                              (Location of install scripts for the app)
+
     libraryfolders.vdf
-      # = /path/to/folder                                               (A non-default Steam Library Folder; # will be 1+)
-    common/                                                             (Data for installed apps/games)
+      # = /path/to/folder                                               (A non-default Steam Library Folder; # will start at 1 because the default folder is 0)
+    common/                                                             (Installed apps)
   userdata/
     Steam64ID/
       7/
         remote/
           sharedconfig.vdf
-
             UserRoamingConfigStore
               Software
                 Valve
@@ -161,7 +181,7 @@ Steam/
                         cloudenabled = 0 | 1                            (Game's Properties page -> Steam Cloud -> Enable Steam Cloud synchronization for [app name])
                         Hidden = 0 | 1
                         tags
-                          # = "tag"                                     (Where "tag" is either a user tag or the default tag "favorite")
+                          # = "tag"                                     (Where "tag" is either a user tag or the default tag "favorite"; # starts at 0, but "favorite" gets 0 if it is selected)
                     SteamDefaultDialog                                  (Interface -> Favorite window)
                       #app_store = Store
                       #app_games = Library
@@ -170,32 +190,50 @@ Steam/
                       #steam_menu_friend_activity = Friend Activity
                       #steam_menu_community_home = Community
                       #app_servers = Servers
+                    FriendsUI                                           (New friends/chat UI settings)
+                      FriendsUIJSON                                     ( ...in JSON format)
+                        b24HourClock = true | false                     (Friends Settings -> Chat -> Always display timestamps in 24-hour format)
+                        bAlwaysNewChatWindow = true | false             (Friends Settings -> Chat -> Open a new window for new chats (rather than a tab))
+                        bCompactFriendsList = true | false              (Friends Settings -> Size & Scaling -> Compact friends list)
+                        bCompactQuickAccess = true | false              (Friends Settings -> Size & Scaling -> Compact favorites area)
+                        bDisableEmbedInlining = true | false            (Friends Settings -> Chat -> Don't embed images and other media inline)
+                        bDoNotDisturbMode = true | false                (Friends status -> Do not disturb)
+                        bForceAlphabeticFriendSorting = true | false    (Friends list -> sort option at right of Friends/Group Chats bars while expanded; True = sort alphabetically; false = sort by most recent)
+                        bHideCategorizedFriends = true | false          (Friends Settings -> Friends List -> Hide categorized friends in Online/Offline Friends)
+                        bHideOfflineFriendsInTagGroups = true | false   (Friends Settings -> Friends List -> Hide offline friends in custom categories)
+                        bNotifications_EventsAndAnnouncements = true | false (Not available in current UI...lol)
+                        bNotifications_ShowChatRoomNotification = true | false (Friends Settings -> Notifications -> When I receive a chat room notification -> Show a notification)
+                        bNotifications_ShowIngame = true | false        (Friends Settings -> Notifications -> When a friend joins a game -> Show a notification)
+                        bNotifications_ShowMessage = true | false       (Friends Settings -> Notifications -> When I receive a direct chat message -> Show a notification)
+                        bNotifications_ShowOnline = true | false        (Friends Settings -> Notifications -> When a friend comes online -> Show a notification)
+                        bRememberOpenChats = true | false               (Friends Settings -> Chat -> Remember my open chats)
+                        bSignIntoFriends = true | false                 (Friends settings -> Friends List -> Sign in to friends when Steam Client starts)
+                        bCategorizeInGameFriendsByGame = true | false   (Friends settings -> )
+                        bSounds_EventsAndAnnouncements = true | false   (Not available in current UI...lol)
+                        bSounds_PlayChatRoomNotification = true | false (Friends Settings -> Notifications -> When I receive a chat room notification -> Play a sound)
+                        bSounds_PlayIngame = true | false               (Friends Settings -> Notifications -> When a friend joins a game -> Play a sound)
+                        bSounds_PlayMessage = true | false              (Friends Settings -> Notifications -> When I receive a direct chat message -> Play a sound)
+                        bSounds_PlayOnline = true | false               (Friends Settings -> Notifications -> When a friend comes online -> Play a sound)
+                        nChatFlashMode = #                              (Friends Settings -> Notifications -> Flash window when I receive a chat message)
+                          0 = Always
+                          1 = Only when minimized
+                          2 = Never
+                        nChatFontSize = #                               (Friends Settings -> General -> Chat font size)
+                          1 = Small
+                          2 = Default
+                          3 = Large
+                        featuresEnabled
+                          DoNotDisturb = 0 | 1                          (Does not seem to be used...)
+            Web
+              WebFav#_URL = URL                                         (A URL you have saved as a favorite in the Steam In-Game Overlay Web Browser, where # starts at 0)
+              WebFav#_Name = Favorite site name                         (The name of a URL that's saved as a favorite)
+              # = 0..4 (default)
       config/
         localconfig.vdf
           UserLocalConfigStore
-            friends
-              PersonaStateDesired = #                                   (Friends -> status)
-                0 = offline
-                6 = Looking to Play
-                5 = Looking to Trade
-                4 = Snooze
-                2 = Busy
-                3 = Away
-                1 = Online
-              VoiceReceiveVolume = 0 to 255                             (Voice -> Receive Volume)
-              Notifications_ShowIngame = 0 | 1                          (Friends -> When any Friend joins a game -> Display a notification)
-              Sounds_PlayIngame = 0 | 1                                 (Friends -> When any Friend joins a game -> Play a sound)
-              Notifications_ShowOnline 0 | 1                            (Friends -> When any Friend comes online -> Display a notification)
-              Sounds_PlayOnline = 0 | 1                                 (Friends -> When any Friend comes online -> Play a sound)
-              Notifications_ShowMessage = 0 | 1                         (Friends -> When I receive a message -> Display a a notification)
-              Sounds_PlayMessage = 0 | 1                                (Friends -> When I receive a message -> Display a a notification)
-              AutoSignIntoFriends = 0 | 1                               (Friends -> Automatically sign into Friends when I start Steam)
-              ShowTimeInChatLogCheck = 0 | 1                            (Friends -> Display timestamps in chat log)
-              AlwaysNewChatWindow = 0 | 1                               (Friends -> Always open a new chat window rather than a tab)
-              Notifications_EventsAndAnnouncements = 0 | 1	            (Friends -> For group events and announcements -> Display a notification)
-              Sounds_EventsAndAnnouncements = 0 | 1                     (Friends -> For group events and announcements -> Display a notification)
-              ChatFlashMode = 0 | 1                                     (Friends -> Flash window when I receive a message)
-              ShowFriendsPanelInOverlay = 0 | 1                         (If the Friends dialog was open when you last had the Overlay open)
+            ParentalSettings
+              settings                                                  (Encoded version of parental control settings)
+              Signature                                                 (Signature for parental control settings; likely also holds the PIN)
             streaming_v2
               EnableStreaming = 0 | 1                                   (In-Home Streaming -> Enable Streaming)
               QualityPreference = #                                     (In-Home Streaming -> Client options)
@@ -241,12 +279,37 @@ Steam/
               LastInstallFolderIndex = #                                (The last Steam Library folder you installed a game to)
                 0 = default ../Steam/steamapps/ folder
                 # = Index of folder from libraryfolders.vdf (1 or more).
-            StartupState.Friends = 0 | 1                                (Whether the Friends dialog was open when you last had Steam open)
+            friends
+              PersonaName                                               (The account display name)
+              Notifications_ShowIngame = 0 | 1                          (Friends -> When any Friend joins a game -> Display a notification)
+              Notifications_ShowOnline 0 | 1                            (Friends -> When any Friend comes online -> Display a notification)
+              Notifications_ShowMessage = 0 | 1                         (Friends -> When I receive a message -> Display a a notification)
+              Notifications_EventsAndAnnouncements = 0 | 1	            (Friends -> For group events and announcements -> Display a notification)
+              Sounds_PlayIngame = 0 | 1                                 (Friends -> When any Friend joins a game -> Play a sound)
+              Sounds_PlayOnline = 0 | 1                                 (Friends -> When any Friend comes online -> Play a sound)
+              Sounds_PlayMessage = 0 | 1                                (Friends -> When I receive a message -> Play a sound)
+              Sounds_EventsAndAnnouncements = 0 | 1                     (Friends -> For group events and announcements -> Play a sound)
+              ChatFlashMode = #                                         (Friends -> Flash window when I receive a message)
+                0 = Always
+                1 = Only when minimized
+                2 = Never
+              SignIntoFriends = 0 | 1                                   (Unknown)
+              AutoSignIntoFriends = 0 | 1                               (Friends -> Automatically sign into Friends when I start Steam)
+              ShowTimeInChatLogCheck = 0 | 1                            (Friends -> Display timestamps in chat log)
+              AlwaysNewChatWindow = 0 | 1                               (Friends -> Always open a new chat window rather than a tab)
+            StartupState.Friends = 0 | 1                                (Whether the Friends dialog was open when you last had Steam open; will auto-open it on start)
             News
               NotifyAvailableGames = 0 | 1                              (Interface -> Notify me about additions or changes to my games, new releases, and upcoming releases)
+            Software
+              Valve
+                Steam
+                  Apps
+                    appid
+                      LastPlayed                                        (Time this app was last played)
+                  LastPlayedTimesSyncTime                               (The time LastPlayed time was last synchronized)
             system
               EnableGameOverlay = 0 | 1                                 (In-Game -> Enable the Steam overlay while in-game)
-              InGameOverlayShortcutKey = ValveKeyCombo                  (In-Game -> Overlay shortcut keys)
+              InGameOverlayShortcutKey = 2x ValveKeyCode                (In-Game -> Overlay shortcut keys)
                 Modifiers
                     Shift
                     Ctrl
@@ -282,7 +345,7 @@ Steam/
                 2 = Top-right
                 3 = Bottom-right
                 4 = Bottom-left
-              InGameOverlayScreenshotHotKey KEY_F12                     (In-Game -> Screenshot shortcut keys)
+              InGameOverlayScreenshotHotKey = ValveKeyCode              (In-Game -> Screenshot shortcut keys)
               NavUrlBar = 0 | 1                                         (Interface -> Display Steam URL address bar when available)
               displayratesasbits = 0 | 1                                (Downloads -> Display download rates in bits per second)
               UsePushToTalk = 0 | 1                                     (Voice -> Automatically transmit my voice when I speak)
@@ -292,23 +355,24 @@ Steam/
                 Mac seems to use the key codes [from this page](http://macbiblioblog.blogspot.com/2014/12/key-codes-for-function-and-special-keys.html)
                 Windows 7 seems to use the classic ASCII key codes
                 Ubuntu Linux 16 seems to use the key codes [from this page](http://www.tcl.tk/man/tcl8.4/TkCmd/keysyms.htm)
+              UsePushToMute = 0 | 1                                     (Voice -> Use a push-to-mute key to mute voice)
+              PushToMuteKey = same as above for PTT                     (Voice -> Push to talk key)
               GameOverlayHomePage = string                              (Web Browser -> Web browser home page)
-              JumplistSettings = #                                      (Interface -> Taskbar preferences)
-                Unknown # format
-              JumplistSettingsKnown = #                                 (Interface -> Taskbar preferences)
-                Unknown # format
+            Apps
+              # (appid)
+                DisableLaunchInVR = 0 | 1                               (per-game Properties -> General -> Use Desktop Game Theatre while SteamVR is active)
         shortcuts.vdf
-          #
-            AppName = "the name of the program in Steam"
-            exe = "the path to the executable file"
-            StartDir = "program start directory"
-            icon = "override program icon"
-            ShortcutPath = "path to shortcut"
-            LaunchOptions = "exe launch options"
-            IsHidden = 0 | 1
-            AllowDesktopConfig = 0 | 1
-            AllowOverlay = 0 | 1
-            OpenVR = 0 | 1
-            LastPlayTime = unix time in seconds
+          * Binary Valve KeyValue format *
+            AppName = string                                            (Properties -> Name)
+            exe = path                                                  (The path to the executable)
+            StartDir = path                                             (Properties -> Start In)
+            icon                                                        (Icon location; Properties -> Choose icon to change to a different icon)
+            ShortcutPath                                                (Path to the shortcut; Properties -> Change to modify the location)
+            LaunchOptions                                               (Program launch options; Properties -> Set Launch Options)
+            IsHidden = 0 | 1                                            (Set Categories -> Hide this game in my library)
+            AllowDesktopConfig = 0 | 1                                  (Unknown)
+            AllowOverlay = 0 | 1                                        (Not available through UI)
+            OpenVR = 0 | 1                                              (Properties -> Include in VR Library)
+            LastPlayTime = #                                            (Unix time in seconds)
             tags
-              # = "tags"
+              # = "tag"                                                 (Same as tags of sharedconfig.vdf/UserRoamingConfigStore.Software.Valve.Steam.Apps)
